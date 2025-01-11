@@ -33,12 +33,21 @@ interface SpotifyResponse {
     item: SpotifyTrack;
 }
 
+// Ensure environment variables are available
+if (!process.env.SPOTIFY_REFRESH_TOKEN) throw new Error('Missing SPOTIFY_REFRESH_TOKEN')
+if (!process.env.SPOTIFY_CLIENT_ID) throw new Error('Missing SPOTIFY_CLIENT_ID')
+if (!process.env.SPOTIFY_CLIENT_SECRET) throw new Error('Missing SPOTIFY_CLIENT_SECRET')
+
 // Your Spotify credentials
-const REFRESH_TOKEN = 'AQCZZ05D8E8a2qL33mXnOCf1a9MPs8W8nY4s-IaMQdD8WwrSGoNOvMO_r90_v6vTx0Kpk354otB-X2UWFgG5hxDI3niNwKsPpzmuQ16nGoxvodXT2jnmu4EA5iBps3VJEiM'
-const CLIENT_ID = '3764500d720b4a1ea9628f19ebb2f540'
-const CLIENT_SECRET = '620dd1be5df847569825f660b6f69f23'
+const REFRESH_TOKEN = process.env.SPOTIFY_REFRESH_TOKEN
+const CLIENT_ID = process.env.SPOTIFY_CLIENT_ID
+const CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET
 
 async function getAccessToken(): Promise<string> {
+    if (!CLIENT_ID || !CLIENT_SECRET || !REFRESH_TOKEN) {
+        throw new Error('Missing required environment variables')
+    }
+
     const basic = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64')
     const response = await fetch('https://accounts.spotify.com/api/token', {
         method: 'POST',
@@ -49,7 +58,7 @@ async function getAccessToken(): Promise<string> {
         body: new URLSearchParams({
             grant_type: 'refresh_token',
             refresh_token: REFRESH_TOKEN,
-        }),
+        }).toString()
     })
 
     const data = await response.json() as TokenResponse
