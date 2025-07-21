@@ -8,16 +8,19 @@ export const config = {
   }
   
   interface SpotifyResponse {
-    is_playing: boolean;
-    item?: {
+  is_playing: boolean;
+  item?: {
+    name: string;
+    artists: Array<{ name: string }>;
+    album: {
       name: string;
-      artists: Array<{ name: string }>;
-      album: {
-        name: string;
-        images: Array<{ url: string }>;
-      };
+      images: Array<{ url: string }>;
     };
-  }
+    external_urls: {
+      spotify: string;
+    };
+  };
+}
   
   export default async function handler(request: Request) {
     try {
@@ -72,17 +75,18 @@ export const config = {
       const data = await response.json() as SpotifyResponse;
   
       return new Response(JSON.stringify({
-        isPlaying: data.is_playing,
-        title: data.item?.name || '',
-        artist: data.item?.artists[0]?.name || '',
-        album: data.item?.album?.name || '',
-        albumArt: data.item?.album?.images[0]?.url || ''
-      }), {
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        }
-      });
+  isPlaying: data.is_playing,
+  title: data.item?.name || '',
+  artist: data.item?.artists[0]?.name || '',
+  album: data.item?.album?.name || '',
+  albumArt: data.item?.album?.images[0]?.url || '',
+  url: data.item?.external_urls?.spotify || ''
+}), {
+  headers: {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*'
+});
+        
     } catch (error) {
       return new Response(JSON.stringify({ 
         error: 'Error fetching now playing',
